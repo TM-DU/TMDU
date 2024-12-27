@@ -1,0 +1,16 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "make",
+            "type": "shell",
+            "command": "make CFLAGS='-g -O0'",
+            "dependsOn": "clean"
+        },
+        {
+            "label": "clean",
+            "type": "shell",
+            "command": "make clean",
+        }
+    ]
+}

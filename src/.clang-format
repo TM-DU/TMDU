@@ -1,0 +1,16 @@
+BasedOnStyle: Google
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+ColumnLimit: 800
+BreakBeforeBraces: Attach
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: All
+SpacesInParentheses: false
+SpaceAfterCStyleCast: true
+SpaceBeforeParens: Never
+DerivePointerAlignment: false
+PointerAlignment: Right
+IndentPPDirectives: AfterHash
+PPIndentWidth: 1

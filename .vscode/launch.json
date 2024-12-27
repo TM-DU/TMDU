@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Build Run",
+            "type": "lldb-dap",
+            "request": "launch",
+            "program": "${workspaceFolder}/ncdu",
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "make"
+        },
+        {
+            "name": "Run without build",
+            "type": "lldb-dap",
+            "request": "launch",
+            "program": "${workspaceFolder}/ncdu",
+            "cwd": "${workspaceFolder}",
+        }
+    ]
+}
