@@ -352,6 +352,64 @@ static int dir_walk(char *dir) {
   return fail;
 }
 
+static void listbackups(void) {
+  char *rootName = "/Volumes/.timemachine";
+  struct dir *root = xmalloc(dir_memsize(rootName));
+  // item_add
+  strcpy(root->name, rootName);
+  dir_output.item(root, rootName, buf_ext, buf_nlink);
+
+  // tmutil requires default Terminal.app, otherwise it will requires Full disk permissions
+  // system("open /Volumes/Projects/tmutil");
+  while(access("/Volumes/Projects/tmutil.listbackups.txt", F_OK) == -1) {
+    sleep(1);
+  }
+
+  FILE *fp = fopen("/Volumes/Projects/tmutil.listbackups.txt", "r");
+  if(fp == NULL) {
+    perror("tmutil failed");
+    return;
+  }
+
+  size_t buflen = 512;
+  size_t off = 0;
+  char *buf = NULL;
+
+  char stdoutstr[LINE_MAX] = {0};
+  while(fgets(stdoutstr, sizeof(stdoutstr), fp) != 0) {
+    struct dirent *item;
+    size_t len, req;
+    int32_t stdoutstrlen = strlen(stdoutstr);
+
+    // remove \n
+    if(stdoutstr[stdoutstrlen - 1] == '\n') {
+      stdoutstr[stdoutstrlen - 1] = '/';
+    }
+
+    DIR *dir = opendir(stdoutstr);
+    if((item = readdir(dir)) == NULL) {
+      continue;
+    }
+    if(item->d_name[0] == '.' && (item->d_name[1] == 0 || (item->d_name[1] == '.' && item->d_name[2] == 0))) {
+      continue;
+    }
+
+    len = strlen(item->d_name);
+    req = off + 3 + len;
+    if(req > buflen) {
+      buflen = req < buflen * 2 ? buflen * 2 : req;
+      buf = xrealloc(buf, buflen);
+    }
+    strcpy(buf + off, item->d_name);
+    off += len + 1;
+
+    dir_walk(dir);
+  }
+
+  if(pclose(fp) == -1) {
+    perror("pclose failed");
+  }
+}
 
 static int process(void) {
   char *path;
@@ -363,7 +421,11 @@ static int process(void) {
   memset(buf_ext, 0, sizeof(struct dir_ext));
   buf_nlink = 0;
 
-  if((path = path_real(dir_curpath)) == NULL)
+  if(strcmp(dir_curpath, "/Volumes/.timemachine") == 0) {
+    listbackups();
+    pstate = ST_BROWSE;
+    return 0;
+  } else if((path = path_real(dir_curpath)) == NULL)
     dir_seterr("Error obtaining full path: %s", strerror(errno));
   else {
     dir_curpath_set(path);

@@ -381,8 +381,7 @@ static void config_load(int argc, char **argv) {
 static void argv_parse(int argc, char **argv) {
   int r;
   char *export = NULL;
-  char *import = NULL;
-  char *dir = NULL;
+  char *dir = "/Volumes/.timemachine";
 
   memset(&argparser_state, 0, sizeof(struct argparser));
   argparser_state.argv = argv;
@@ -390,13 +389,11 @@ static void argv_parse(int argc, char **argv) {
   argparser_next(&argparser_state); /* skip program name */
 
   while((r = argparser_next(&argparser_state)) > 0) {
-    if(r == 2) dir = argparser_state.last;
-    else if(OPT("-v") || OPT("-V") || OPT("--version")) {
+    if(OPT("-v") || OPT("-V") || OPT("--version")) {
       printf("ncdu %s\n", PACKAGE_VERSION);
       exit(0);
     } else if(OPT("-h") || OPT("-?") || OPT("--help")) arg_help();
     else if(OPT("-o")) export = ARG;
-    else if(OPT("-f")) import = ARG;
     else if(OPT("--ignore-config")) {}
     else if(!arg_option(0)) die("Unknown option '%s'.\n", argparser_state.last);
   }
@@ -411,20 +408,16 @@ static void argv_parse(int argc, char **argv) {
   } else
     dir_mem_init(NULL);
 
-  if(import) {
-    if(dir_import_init(import)) die("Can't open %s: %s\n", import, strerror(errno));
-    if(strcmp(import, "-") == 0) ncurses_tty = 1;
-  } else
-    dir_scan_init(dir ? dir : ".");
+  dir_scan_init(dir);
 
   /* Use the single-line scan feedback by default when exporting to file, no
    * feedback when exporting to stdout. */
   if(dir_ui == -1)
     dir_ui = export && strcmp(export, "-") == 0 ? 0 : export ? 1 : 2;
 
-  if(can_delete == -1)  can_delete  = import ? 0 : 1;
-  if(can_shell == -1)   can_shell   = import ? 0 : 1;
-  if(can_refresh == -1) can_refresh = import ? 0 : 1;
+  can_delete = 1;
+  can_shell = 0;
+  can_refresh = 1;
 }
 
 
